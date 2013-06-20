@@ -12,13 +12,14 @@ import android.widget.ImageView;
 
 public class PkhdActivity extends Activity {
     public HashMap<String, Integer> image_map;
-    public ImageView player_left;
+    public HashMap<String, ImageView> player_holder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+        player_holder = new HashMap<String, ImageView>();
         image_map = new HashMap<String, Integer>();
         Context context = getApplicationContext();
         int image_id = 0;
@@ -31,38 +32,55 @@ public class PkhdActivity extends Activity {
         }
 
         setContentView(R.layout.activity_pkhd);
-        player_left = (ImageView) findViewById(R.id.player_left);
-        findViewById(R.id.player_left).setOnClickListener(new View.OnClickListener() {
+        player_holder.put("player_left", (ImageView) findViewById(R.id.player_left));
+        player_holder.put("player_right", (ImageView) findViewById(R.id.player_right));
 
+        findViewById(R.id.player_left).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /* Redraw image. */
-                Log.e("PkhdActivity", "Player Left was clicked. Tag: " + player_left.getTag());
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        int counter = 12;
-                        while (--counter >= 0) {
-                            /* sleep */
-                            Log.e("PkhdActivity", "Looping with counter: " + counter);
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            /* run on ui thread */
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    int num = (Integer.parseInt((String) player_left.getTag()) + 1) % 12;
-                                    player_left.setImageResource(image_map.get("base_p_left" + num));
-                                    player_left.setTag(Integer.toString(num));
-                                }
-                            });
-                        }
-                    }
-                }).start();
+                Log.e("PkhdActivity", "Player Left was clicked. Tag: " + player_holder.get("player_left").getTag());
+                new Thread(new PkhdAnimator("left")).start();
             }
         });
+    }
+
+    class PkhdAnimator implements Runnable {
+        private String target;
+
+        public PkhdAnimator(String target) {
+            this.target = target;
+        }
+
+        @Override
+        public void run() {
+            int counter = 12;
+            while (--counter >= 0) {
+                /* sleep */
+                Log.e("PkhdActivity", "Looping with counter: " + counter + " on target: " + this.target);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                /* run on ui thread */
+                runOnUiThread(new PkhdBlitter(this.target));
+            }
+        }
+    }
+
+    class PkhdBlitter implements Runnable {
+        private String target;
+
+        public PkhdBlitter(String target) {
+            this.target = target;
+        }
+
+        @Override
+        public void run() {
+            Log.e("PkhdActivity", "Looping on target: " + this.target);
+            int num = (Integer.parseInt((String) player_holder.get("player_" + this.target).getTag()) + 1) % 12;
+            player_holder.get("player_" + this.target).setImageResource(image_map.get("base_p_" + this.target + num));
+            player_holder.get("player_" + this.target).setTag(Integer.toString(num));
+        }
     }
 }
