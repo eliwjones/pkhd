@@ -24,7 +24,7 @@ public class PkhdActivity extends Activity {
         Context context = getApplicationContext();
         int image_id = 0;
         /* Can stuff in "base_p_right", "base_k_left" etc. */
-        for (String base_name : new String[] { "base_p_left" }) {
+        for (String base_name : new String[] { "base_p_left", "base_p_right" }) {
             for (int i = 0; i < 12; i++) {
                 image_id = context.getResources().getIdentifier(base_name + "_" + i, "drawable", context.getPackageName());
                 image_map.put(base_name + i, image_id);
@@ -87,7 +87,6 @@ public class PkhdActivity extends Activity {
             
             String player = "player_" + this.target;
             int num = (Integer.parseInt((String) player_holder.get(player).getTag()) + 1) % 12;
-            this.target = "left"; /* Needed until add actual "right" assets. */
             String action_type = "base_p_" + this.target + num;
             
             player_holder.get(player).setImageResource(image_map.get(action_type));
