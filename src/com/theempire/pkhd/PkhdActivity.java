@@ -78,9 +78,13 @@ public class PkhdActivity extends Activity {
         @Override
         public void run() {
             Log.e("PkhdActivity", "Looping on target: " + this.target);
-            int num = (Integer.parseInt((String) player_holder.get("player_" + this.target).getTag()) + 1) % 12;
-            player_holder.get("player_" + this.target).setImageResource(image_map.get("base_p_" + this.target + num));
-            player_holder.get("player_" + this.target).setTag(Integer.toString(num));
+            
+            String player = "player_" + this.target;
+            int num = (Integer.parseInt((String) player_holder.get(player).getTag()) + 1) % 12;
+            String action_type = "base_p_" + this.target + num;
+            
+            player_holder.get(player).setImageResource(image_map.get(action_type));
+            player_holder.get(player).setTag(Integer.toString(num));
         }
     }
 }
