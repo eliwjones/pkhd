@@ -35,14 +35,14 @@ public class PkhdActivity extends Activity {
         player_holder.put("player_left", (ImageView) findViewById(R.id.player_left));
         player_holder.put("player_right", (ImageView) findViewById(R.id.player_right));
 
-        findViewById(R.id.player_left).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.p).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new Thread(new PkhdAnimator("left")).start();
             }
         });
 
-        findViewById(R.id.player_right).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.d).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 new Thread(new PkhdAnimator("right")).start();
