@@ -38,8 +38,14 @@ public class PkhdActivity extends Activity {
         findViewById(R.id.player_left).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("PkhdActivity", "Player Left was clicked. Tag: " + player_holder.get("player_left").getTag());
                 new Thread(new PkhdAnimator("left")).start();
+            }
+        });
+        
+        findViewById(R.id.player_right).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(new PkhdAnimator("right")).start();
             }
         });
     }
@@ -81,6 +87,7 @@ public class PkhdActivity extends Activity {
             
             String player = "player_" + this.target;
             int num = (Integer.parseInt((String) player_holder.get(player).getTag()) + 1) % 12;
+            this.target = "left"; /* Needed until add actual "right" assets. */
             String action_type = "base_p_" + this.target + num;
             
             player_holder.get(player).setImageResource(image_map.get(action_type));
