@@ -28,7 +28,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
 
         int image_id = 0;
         /* Can stuff in "base_p_right", "base_k_left" etc. */
-        for (String base_name : new String[] { "base_p_left", "base_p_right" }) {
+        for (String base_name : new String[] { "base_p_left", "base_p_right", "base_k_left", "base_k_right", "base_h_left", "base_h_right", "base_d_left", "base_d_right" }) {
             for (int i = 0; i < 12; i++) {
                 image_id = context.getResources().getIdentifier(base_name + "_" + i, "drawable", context.getPackageName());
                 image_map.put(base_name + i, image_id);
