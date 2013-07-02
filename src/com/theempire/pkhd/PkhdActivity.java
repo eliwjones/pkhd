@@ -10,7 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-public class PkhdActivity extends Activity {
+public class PkhdActivity extends Activity implements View.OnClickListener{
+    public HashMap<Integer, String> name_id_map;
     public HashMap<String, Integer> image_map;
     public HashMap<String, ImageView> player_holder;
 
@@ -18,10 +19,13 @@ public class PkhdActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        Context context = getApplicationContext();
+        setContentView(R.layout.activity_pkhd);
 
         player_holder = new HashMap<String, ImageView>();
         image_map = new HashMap<String, Integer>();
-        Context context = getApplicationContext();
+        name_id_map = new HashMap<Integer, String>();
+
         int image_id = 0;
         /* Can stuff in "base_p_right", "base_k_left" etc. */
         for (String base_name : new String[] { "base_p_left", "base_p_right" }) {
@@ -30,31 +34,44 @@ public class PkhdActivity extends Activity {
                 image_map.put(base_name + i, image_id);
             }
         }
+        String view_id_string = "";
+        for (String player_name : new String[] {"left", "right"}){
+            for (String action : new String[] {"p","k","h","d"}){
+                view_id_string = action + "_" + player_name;
+                image_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
+                if(image_id != 0){
+                    findViewById(image_id).setOnClickListener(this);
+                }
+                name_id_map.put(image_id, view_id_string);
+            }
+        }
 
-        setContentView(R.layout.activity_pkhd);
+
         player_holder.put("player_left", (ImageView) findViewById(R.id.player_left));
         player_holder.put("player_right", (ImageView) findViewById(R.id.player_right));
-
-        findViewById(R.id.p).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Thread(new PkhdAnimator("left")).start();
-            }
-        });
-
-        findViewById(R.id.d).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Thread(new PkhdAnimator("right")).start();
-            }
-        });
     }
+    
+    @Override
+    public void onClick(View v){
+        String view_name = name_id_map.get(v.getId());
+        String[] parts = view_name.split("_");
+        String action = parts[0];
+        String player_position = parts[1];
 
+        eventRouter("player", player_position, action);
+    }
+    
+    public void eventRouter(String top_level, String bottom_level, String action){
+        new Thread(new PkhdAnimator(bottom_level, action)).start();
+    }
+    
     class PkhdAnimator implements Runnable {
         private String target;
+        private String action;
 
-        public PkhdAnimator(String target) {
+        public PkhdAnimator(String target, String action) {
             this.target = target;
+            this.action = action;
         }
 
         @Override
@@ -69,16 +86,18 @@ public class PkhdActivity extends Activity {
                     e.printStackTrace();
                 }
                 /* run on ui thread */
-                runOnUiThread(new PkhdBlitter(this.target));
+                runOnUiThread(new PkhdBlitter(this.target, this.action));
             }
         }
     }
 
     class PkhdBlitter implements Runnable {
         private String target;
+        private String action;
 
-        public PkhdBlitter(String target) {
+        public PkhdBlitter(String target, String action) {
             this.target = target;
+            this.action = action;
         }
 
         @Override
@@ -87,7 +106,7 @@ public class PkhdActivity extends Activity {
 
             String player = "player_" + this.target;
             int num = (Integer.parseInt((String) player_holder.get(player).getTag()) + 1) % 12;
-            String action_type = "base_p_" + this.target + num;
+            String action_type = "base_" + this.action + "_" + this.target + num;
 
             player_holder.get(player).setImageResource(image_map.get(action_type));
             player_holder.get(player).setTag(Integer.toString(num));
