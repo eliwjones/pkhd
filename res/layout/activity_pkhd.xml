@@ -14,14 +14,14 @@
             android:id="@+id/player_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/base_p_left_0"
+            android:src="@drawable/player_left_p_0"
             android:tag="0" />
 
         <ImageView
             android:id="@+id/player_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/base_p_right_0"
+            android:src="@drawable/player_right_p_0"
             android:tag="0" />
     </LinearLayout>
 

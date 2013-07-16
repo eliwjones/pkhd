@@ -36,35 +36,27 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         int image_id = 0;
         int view_id = 0;
         String view_id_string = "";
-        String base_name = "";
         for (String player_name : new String[] {"player_left", "player_right"}){
-            /* Funky split to build base_name. */
-            String[] parts = player_name.split("_");
-            
-            for (String action : new String[] {"p","k","h","d"}){
-                view_id_string = player_name + "_" + action;
-                
-                view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
-                if(view_id != 0){
-                    findViewById(view_id).setOnClickListener(this);
-                    name_id_map.put(view_id, view_id_string);
-                }
-                
-                /* Ultimately, just need to rename underlying image assets. e.g. base_p_right -> player_right_p */
-                base_name = "base_" + action + "_" + parts[1];
-                image_map.put(view_id_string, new ArrayList<Integer>());
-                for (int i = 0; i < 12; i++) {
-                    image_id = context.getResources().getIdentifier(base_name + "_" + i, "drawable", context.getPackageName());
-                    image_map.get(view_id_string).add(i, image_id);
-                }
-            }
             /* Build out animateable HashMaps */
             view_id = context.getResources().getIdentifier(player_name, "id", context.getPackageName());
             animateable_holder.put(player_name, (ImageView) findViewById(view_id));
             animateable_state.put(player_name, false);
             animateable_buffer.put(player_name, new ArrayList<String>());
-        }
 
+            for (String action : new String[] {"p","k","h","d"}){
+                view_id_string = player_name + "_" + action;
+                view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
+                if(view_id != 0){
+                    findViewById(view_id).setOnClickListener(this);
+                    name_id_map.put(view_id, view_id_string);
+                }
+                image_map.put(view_id_string, new ArrayList<Integer>());
+                for (int i = 0; i < 12; i++) {
+                    image_id = context.getResources().getIdentifier(view_id_string + "_" + i, "drawable", context.getPackageName());
+                    image_map.get(view_id_string).add(i, image_id);
+                }
+            }
+        }
     }
     
     @Override
