@@ -3,4 +3,5 @@
     <issue id="ContentDescription">
         <ignore path="res/layout/activity_pkhd.xml" />
     </issue>
+    <issue id="UseSparseArrays" severity="ignore" />
 </lint>
