@@ -1,11 +1,14 @@
 package com.theempire.pkhd;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,6 +17,8 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
     public HashMap<Integer, String> name_id_map;
     public HashMap<String, Integer> image_map;
     public HashMap<String, ImageView> animateable_holder;
+    public HashMap<String, Boolean> animateable_state;
+    public HashMap<String, List<String>> animateable_buffer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +28,13 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         setContentView(R.layout.activity_pkhd);
 
         animateable_holder = new HashMap<String, ImageView>();
+        animateable_state = new HashMap<String, Boolean>();
+        animateable_buffer = new HashMap<String, List<String>>();
         image_map = new HashMap<String, Integer>();
         name_id_map = new HashMap<Integer, String>();
 
         int image_id = 0;
+        int view_id = 0;
         /* Can stuff in "base_p_right", "base_k_left" etc. */
         for (String base_name : new String[] { "base_p_left", "base_p_right", "base_k_left", "base_k_right", "base_h_left", "base_h_right", "base_d_left", "base_d_right" }) {
             for (int i = 0; i < 12; i++) {
@@ -44,11 +52,13 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
                 }
                 name_id_map.put(image_id, view_id_string);
             }
+            /* Build out animateable HashMaps */
+            view_id = context.getResources().getIdentifier("player_" + player_name, "id", context.getPackageName());
+            animateable_holder.put("player_" + player_name, (ImageView) findViewById(view_id));
+            animateable_state.put("player_" + player_name, false);
+            animateable_buffer.put("player_" + player_name, new ArrayList<String>());
         }
 
-
-        animateable_holder.put("player_left", (ImageView) findViewById(R.id.player_left));
-        animateable_holder.put("player_right", (ImageView) findViewById(R.id.player_right));
     }
     
     @Override
@@ -62,9 +72,17 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
     }
     
     public void eventRouter(String target, String action, Boolean bufferable){
-        if(bufferable){
+        if(bufferable && animateable_state.get(target)){
             /* If animation running, append action to buffer. */
+            if(animateable_buffer.get(target).size() < 3){
+                //Log.e("Animateable Buffer", "Adding to buffer for target: " + target + " action: " + action);
+                animateable_buffer.get(target).add(action);
+            } else {
+                Log.e("Animateable Buffer", "Buffer Full!!!!");
+            }
+            return;
         }
+        animateable_state.put(target, true);
         new Thread(new PkhdAnimator(target, action)).start();
     }
     
@@ -82,7 +100,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
             int counter = 12;
             while (--counter >= 0) {
                 /* sleep */
-                Log.e("PkhdActivity", "Looping with counter: " + counter + " on target: " + this.target);
+                //Log.e("PkhdActivity", "Looping with counter: " + counter + " on target: " + this.target);
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -90,6 +108,13 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
                 }
                 /* run on ui thread */
                 runOnUiThread(new PkhdBlitter(this.target, this.action));
+            }
+            /* Once done with looping, check animateable_buffer.get(target) for actions. */
+            if(!animateable_buffer.get(target).isEmpty()){
+                Log.e("Animateable Buffer","Found stuff in buffer!  Should be animating it!! List: " +  TextUtils.join(", ", animateable_buffer.get(target)));
+                new Thread(new PkhdAnimator(target, animateable_buffer.get(target).remove(0))).start();
+            } else {
+                animateable_state.put(target, false);
             }
         }
     }
@@ -105,7 +130,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
 
         @Override
         public void run() {
-            Log.e("PkhdActivity", "Looping on target: " + this.target);
+            //Log.e("PkhdActivity", "Looping on target: " + this.target);
 
             String[] parts = this.target.split("_");
             int num = (Integer.parseInt((String) animateable_holder.get(this.target).getTag()) + 1) % 12;
