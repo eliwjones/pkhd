@@ -15,7 +15,7 @@ import android.widget.ImageView;
 
 public class PkhdActivity extends Activity implements View.OnClickListener{
     public HashMap<Integer, String> name_id_map;
-    public HashMap<String, Integer> image_map;
+    public HashMap<String, List<Integer>> image_map;
     public HashMap<String, ImageView> animateable_holder;
     public HashMap<String, Boolean> animateable_state;
     public HashMap<String, List<String>> animateable_buffer;
@@ -30,16 +30,21 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         animateable_holder = new HashMap<String, ImageView>();
         animateable_state = new HashMap<String, Boolean>();
         animateable_buffer = new HashMap<String, List<String>>();
-        image_map = new HashMap<String, Integer>();
+        image_map = new HashMap<String, List<Integer>>();
         name_id_map = new HashMap<Integer, String>();
 
         int image_id = 0;
         int view_id = 0;
         /* Can stuff in "base_p_right", "base_k_left" etc. */
         for (String base_name : new String[] { "base_p_left", "base_p_right", "base_k_left", "base_k_right", "base_h_left", "base_h_right", "base_d_left", "base_d_right" }) {
+            /* key must be base_p_left -> player_left_p */
+            /* ultimately, just rename image assets. */
+            String[] parts = base_name.split("_");
+            String image_map_key = "player_" + parts[2] + "_" + parts[1];
+            image_map.put(image_map_key, new ArrayList<Integer>());
             for (int i = 0; i < 12; i++) {
                 image_id = context.getResources().getIdentifier(base_name + "_" + i, "drawable", context.getPackageName());
-                image_map.put(base_name + i, image_id);
+                image_map.get(image_map_key).add(i, image_id);
             }
         }
         String view_id_string = "";
@@ -132,11 +137,10 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         public void run() {
             //Log.e("PkhdActivity", "Looping on target: " + this.target);
 
-            String[] parts = this.target.split("_");
-            int num = (Integer.parseInt((String) animateable_holder.get(this.target).getTag()) + 1) % 12;
-            String action_type = "base_" + this.action + "_" + parts[1] + num;
+            String action_type = this.target + "_" + this.action;
+            int num = (Integer.parseInt((String) animateable_holder.get(this.target).getTag()) + 1) % image_map.get(action_type).size();
 
-            animateable_holder.get(this.target).setImageResource(image_map.get(action_type));
+            animateable_holder.get(this.target).setImageResource(image_map.get(action_type).get(num));
             animateable_holder.get(this.target).setTag(Integer.toString(num));
         }
     }
