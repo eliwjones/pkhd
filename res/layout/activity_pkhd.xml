@@ -34,28 +34,28 @@
         android:orientation="horizontal" >
 
         <ImageView
-            android:id="@+id/p_left"
+            android:id="@+id/player_left_p"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/p"
             android:tag="0" />
 
         <ImageView
-            android:id="@+id/k_left"
+            android:id="@+id/player_left_k"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/k"
             android:tag="0" />
 
         <ImageView
-            android:id="@+id/h_left"
+            android:id="@+id/player_left_h"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/h"
             android:tag="0" />
 
         <ImageView
-            android:id="@+id/d_left"
+            android:id="@+id/player_left_d"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/d"
@@ -71,28 +71,28 @@
         android:orientation="horizontal" >
 
         <ImageView
-            android:id="@+id/p_right"
+            android:id="@+id/player_right_p"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/p"
             android:tag="0" />
 
         <ImageView
-            android:id="@+id/k_right"
+            android:id="@+id/player_right_k"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/k"
             android:tag="0" />
 
         <ImageView
-            android:id="@+id/h_right"
+            android:id="@+id/player_right_h"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/h"
             android:tag="0" />
 
         <ImageView
-            android:id="@+id/d_right"
+            android:id="@+id/player_right_d"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/d"
