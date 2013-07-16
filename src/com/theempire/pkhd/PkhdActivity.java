@@ -13,7 +13,7 @@ import android.widget.ImageView;
 public class PkhdActivity extends Activity implements View.OnClickListener{
     public HashMap<Integer, String> name_id_map;
     public HashMap<String, Integer> image_map;
-    public HashMap<String, ImageView> player_holder;
+    public HashMap<String, ImageView> animateable_holder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +22,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         Context context = getApplicationContext();
         setContentView(R.layout.activity_pkhd);
 
-        player_holder = new HashMap<String, ImageView>();
+        animateable_holder = new HashMap<String, ImageView>();
         image_map = new HashMap<String, Integer>();
         name_id_map = new HashMap<Integer, String>();
 
@@ -47,8 +47,8 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         }
 
 
-        player_holder.put("player_left", (ImageView) findViewById(R.id.player_left));
-        player_holder.put("player_right", (ImageView) findViewById(R.id.player_right));
+        animateable_holder.put("player_left", (ImageView) findViewById(R.id.player_left));
+        animateable_holder.put("player_right", (ImageView) findViewById(R.id.player_right));
     }
     
     @Override
@@ -58,11 +58,14 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         String action = parts[0];
         String player_position = parts[1];
 
-        eventRouter("player", player_position, action);
+        eventRouter("player_" + player_position, action, true);
     }
     
-    public void eventRouter(String top_level, String bottom_level, String action){
-        new Thread(new PkhdAnimator(bottom_level, action)).start();
+    public void eventRouter(String target, String action, Boolean bufferable){
+        if(bufferable){
+            /* If animation running, append action to buffer. */
+        }
+        new Thread(new PkhdAnimator(target, action)).start();
     }
     
     class PkhdAnimator implements Runnable {
@@ -104,12 +107,12 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         public void run() {
             Log.e("PkhdActivity", "Looping on target: " + this.target);
 
-            String player = "player_" + this.target;
-            int num = (Integer.parseInt((String) player_holder.get(player).getTag()) + 1) % 12;
-            String action_type = "base_" + this.action + "_" + this.target + num;
+            String[] parts = this.target.split("_");
+            int num = (Integer.parseInt((String) animateable_holder.get(this.target).getTag()) + 1) % 12;
+            String action_type = "base_" + this.action + "_" + parts[1] + num;
 
-            player_holder.get(player).setImageResource(image_map.get(action_type));
-            player_holder.get(player).setTag(Integer.toString(num));
+            animateable_holder.get(this.target).setImageResource(image_map.get(action_type));
+            animateable_holder.get(this.target).setTag(Integer.toString(num));
         }
     }
 }
