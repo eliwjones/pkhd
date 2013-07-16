@@ -32,30 +32,31 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
         animateable_buffer = new HashMap<String, List<String>>();
         image_map = new HashMap<String, List<Integer>>();
         name_id_map = new HashMap<Integer, String>();
-
+       
         int image_id = 0;
         int view_id = 0;
-        /* Can stuff in "base_p_right", "base_k_left" etc. */
-        for (String base_name : new String[] { "base_p_left", "base_p_right", "base_k_left", "base_k_right", "base_h_left", "base_h_right", "base_d_left", "base_d_right" }) {
-            /* key must be base_p_left -> player_left_p */
-            /* ultimately, just rename image assets. */
-            String[] parts = base_name.split("_");
-            String image_map_key = "player_" + parts[2] + "_" + parts[1];
-            image_map.put(image_map_key, new ArrayList<Integer>());
-            for (int i = 0; i < 12; i++) {
-                image_id = context.getResources().getIdentifier(base_name + "_" + i, "drawable", context.getPackageName());
-                image_map.get(image_map_key).add(i, image_id);
-            }
-        }
         String view_id_string = "";
+        String base_name = "";
         for (String player_name : new String[] {"player_left", "player_right"}){
+            /* Funky split to build base_name. */
+            String[] parts = player_name.split("_");
+            
             for (String action : new String[] {"p","k","h","d"}){
                 view_id_string = player_name + "_" + action;
-                image_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
-                if(image_id != 0){
-                    findViewById(image_id).setOnClickListener(this);
+                
+                view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
+                if(view_id != 0){
+                    findViewById(view_id).setOnClickListener(this);
+                    name_id_map.put(view_id, view_id_string);
                 }
-                name_id_map.put(image_id, view_id_string);
+                
+                /* Ultimately, just need to rename underlying image assets. e.g. base_p_right -> player_right_p */
+                base_name = "base_" + action + "_" + parts[1];
+                image_map.put(view_id_string, new ArrayList<Integer>());
+                for (int i = 0; i < 12; i++) {
+                    image_id = context.getResources().getIdentifier(base_name + "_" + i, "drawable", context.getPackageName());
+                    image_map.get(view_id_string).add(i, image_id);
+                }
             }
             /* Build out animateable HashMaps */
             view_id = context.getResources().getIdentifier(player_name, "id", context.getPackageName());
@@ -118,6 +119,8 @@ public class PkhdActivity extends Activity implements View.OnClickListener{
                 /* run on ui thread */
                 runOnUiThread(new PkhdBlitter(this.target, this.action));
             }
+            /* Reduce health bar at this point if necessary. */
+            
             /* Once done with looping, check animateable_buffer.get(target) for actions. */
             if(!animateable_buffer.get(target).isEmpty()){
                 Log.e("Animateable Buffer","Found stuff in buffer!  Should be animating it!! List: " +  TextUtils.join(", ", animateable_buffer.get(target)));
