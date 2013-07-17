@@ -8,15 +8,18 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<Integer, String> name_id_map;
     public HashMap<String, List<Integer>> image_map;
-    public HashMap<String, ImageView> animateable_holder;
+    public HashMap<String, View> animateable_holder;
     public HashMap<String, Boolean> animateable_state;
     public HashMap<String, List<String>> animateable_buffer;
 
@@ -27,7 +30,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         Context context = getApplicationContext();
         setContentView(R.layout.activity_pkhd);
 
-        animateable_holder = new HashMap<String, ImageView>();
+        animateable_holder = new HashMap<String, View>();
         animateable_state = new HashMap<String, Boolean>();
         animateable_buffer = new HashMap<String, List<String>>();
         image_map = new HashMap<String, List<Integer>>();
@@ -36,24 +39,30 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         int image_id = 0;
         int view_id = 0;
         String view_id_string = "";
-        for (String player_name : new String[] { "player_left", "player_right" }) {
+
+        for (String player_name : new String[] { "player_left", "player_right", "health_left", "health_right" }) {
             /* Build out animateable HashMaps */
             view_id = context.getResources().getIdentifier(player_name, "id", context.getPackageName());
-            animateable_holder.put(player_name, (ImageView) findViewById(view_id));
+            animateable_holder.put(player_name, findViewById(view_id));
             animateable_state.put(player_name, false);
             animateable_buffer.put(player_name, new ArrayList<String>());
 
-            for (String action : new String[] { "p", "k", "h", "d" }) {
-                view_id_string = player_name + "_" + action;
-                view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
-                if (view_id != 0) {
-                    findViewById(view_id).setOnClickListener(this);
-                    name_id_map.put(view_id, view_id_string);
-                }
-                image_map.put(view_id_string, new ArrayList<Integer>());
-                for (int i = 0; i < 12; i++) {
-                    image_id = context.getResources().getIdentifier(view_id_string + "_" + i, "drawable", context.getPackageName());
-                    image_map.get(view_id_string).add(i, image_id);
+            String[] parts = player_name.split("_");
+            if (parts[0].equals("health")) {
+            }
+            if (parts[0].equals("player")) {
+                for (String action : new String[] { "p", "k", "h", "d" }) {
+                    view_id_string = player_name + "_" + action;
+                    view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
+                    if (view_id != 0) {
+                        findViewById(view_id).setOnClickListener(this);
+                        name_id_map.put(view_id, view_id_string);
+                    }
+                    image_map.put(view_id_string, new ArrayList<Integer>());
+                    for (int i = 0; i < 12; i++) {
+                        image_id = context.getResources().getIdentifier(view_id_string + "_" + i, "drawable", context.getPackageName());
+                        image_map.get(view_id_string).add(i, image_id);
+                    }
                 }
             }
         }
@@ -111,7 +120,21 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 /* run on ui thread */
                 runOnUiThread(new PkhdBlitter(this.target, this.action));
             }
+
             /* Reduce health bar at this point if necessary. */
+            String[] right_left = this.target.split("_");
+            String health_bar = right_left[1].equals("left") ? "right" : "left";
+            health_bar = "health_" + health_bar;
+            LinearLayout health_bar_layout = (LinearLayout) animateable_holder.get(health_bar);
+            int health = Integer.parseInt((String) health_bar_layout.getTag());
+            if (health > 0) {
+                Message msg = health_handler.obtainMessage();
+                /* Should add child ImageViews starting at 0 so don't need wonky 10 - health. */
+                msg.obj = health_bar_layout.getChildAt(10 - health);
+                health_handler.sendMessage(msg);
+                health = health - 1;
+                animateable_holder.get(health_bar).setTag("" + health);
+            }
 
             /* Once done with looping, check animateable_buffer.get(target) for actions. */
             if (!animateable_buffer.get(target).isEmpty()) {
@@ -139,8 +162,14 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             String action_type = this.target + "_" + this.action;
             int num = (Integer.parseInt((String) animateable_holder.get(this.target).getTag()) + 1) % image_map.get(action_type).size();
 
-            animateable_holder.get(this.target).setImageResource(image_map.get(action_type).get(num));
+            ((ImageView) animateable_holder.get(this.target)).setImageResource(image_map.get(action_type).get(num));
             animateable_holder.get(this.target).setTag(Integer.toString(num));
         }
     }
+
+    static final Handler health_handler = new Handler() {
+        public void handleMessage(Message msg) {
+            ((ImageView) msg.obj).setVisibility(View.INVISIBLE);
+        }
+    };
 }
