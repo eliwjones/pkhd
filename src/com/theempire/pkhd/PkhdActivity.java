@@ -191,7 +191,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             /* sleeps variable amount of time between 800 and 1500 */
             Random rand_sleep = new Random();
             Random rand_action = new Random();
-            int max = 1500;
+            int max = 2000;
             int min = 1000;
             
             while(true){
