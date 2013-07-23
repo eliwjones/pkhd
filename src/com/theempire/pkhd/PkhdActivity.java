@@ -23,21 +23,20 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<String, View> animatable_holder;
     public HashMap<String, Boolean> animatable_state;
     public HashMap<String, List<String>> animatable_buffer;
-    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pkhd);
-    
+
         Pkhd nasty_singleton = Pkhd.getInstance();
-        if(nasty_singleton.counter.incrementAndGet() > 1){
+        if (nasty_singleton.counter.incrementAndGet() > 1) {
             /* Skip initialization. */
             return;
         }
-        
+
         Context context = getApplicationContext();
         animatable_holder = new HashMap<String, View>();
         animatable_state = new HashMap<String, Boolean>();
@@ -135,7 +134,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 msg.obj = new String[]{this.target, this.action};
                 blitter_handler.sendMessage(msg);
                 */
-                
+
             }
 
             /* Reduce health bar at this point if necessary. */
@@ -183,31 +182,31 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             animatable_holder.get(this.target).setTag(Integer.toString(num));
         }
     }
-    
+
     class Nhpk implements Runnable {
         private String target;
         private String[] actions;
-        
-        public Nhpk(String target, String[] actions){
+
+        public Nhpk(String target, String[] actions) {
             this.target = target;
             this.actions = actions;
         }
-        
+
         @Override
-        public void run(){
+        public void run() {
             /* Fires off events for "player_right" */
             /* sleeps variable amount of time between 800 and 1500 */
             Random rand_sleep = new Random();
             Random rand_action = new Random();
             int max = 2000;
             int min = 1000;
-            
-            while(true){
+
+            while (true) {
                 int index = rand_action.nextInt(actions.length);
                 String action = actions[index];
-                
+
                 eventRouter(this.target, action, true);
-                
+
                 int sleep = rand_sleep.nextInt(max - min + 1) + min;
                 try {
                     Thread.sleep(sleep);
@@ -218,11 +217,11 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             }
         }
     }
-    
+
     final Handler blitter_handler = new Handler() {
-        public void handleMessage(Message msg){
-            String target = ((String[])msg.obj)[0];
-            String action = ((String[])msg.obj)[1];
+        public void handleMessage(Message msg) {
+            String target = ((String[]) msg.obj)[0];
+            String action = ((String[]) msg.obj)[1];
             int num = (Integer.parseInt((String) animatable_holder.get(target).getTag()) + 1) % image_map.get(target + "_" + action).size();
             ((ImageView) animatable_holder.get(target)).setImageResource(image_map.get(target + "_" + action).get(num));
             animatable_holder.get(target).setTag(Integer.toString(num));
