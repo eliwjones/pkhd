@@ -23,6 +23,8 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<String, View> animatable_holder;
     public HashMap<String, Boolean> animatable_state;
     public HashMap<String, List<String>> animatable_buffer;
+    
+    public long zero_time;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,11 +33,16 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pkhd);
 
-        Pkhd nasty_singleton = Pkhd.getInstance();
-        if (nasty_singleton.counter.incrementAndGet() > 1) {
+        /* No point in singleton, maybe later. */
+        //Pkhd nasty_singleton = Pkhd.getInstance();
+        if (name_id_map != null) {
             /* Skip initialization. */
+            /* Don't need silly nasty_singleton.counter.incrementAndGet() */
             return;
         }
+        
+        zero_time = System.currentTimeMillis();
+        Log.e("ZeroTime", "Setting to: " + zero_time);
 
         Context context = getApplicationContext();
         animatable_holder = new HashMap<String, View>();
@@ -48,19 +55,19 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         int view_id = 0;
         String view_id_string = "";
 
-        for (String player_name : new String[] { "player_left", "player_right", "health_left", "health_right" }) {
+        for (String animatable_name : new String[] { "player_left", "player_right", "health_left", "health_right" }) {
             /* Build out animatable HashMaps */
-            view_id = context.getResources().getIdentifier(player_name, "id", context.getPackageName());
-            animatable_holder.put(player_name, findViewById(view_id));
-            animatable_state.put(player_name, false);
-            animatable_buffer.put(player_name, new ArrayList<String>());
+            view_id = context.getResources().getIdentifier(animatable_name, "id", context.getPackageName());
+            animatable_holder.put(animatable_name, findViewById(view_id));
+            animatable_state.put(animatable_name, false);
+            animatable_buffer.put(animatable_name, new ArrayList<String>());
 
-            String[] parts = player_name.split("_");
+            String[] parts = animatable_name.split("_");
             if (parts[0].equals("health")) {
             }
             if (parts[0].equals("player")) {
                 for (String action : new String[] { "p", "k", "h", "d" }) {
-                    view_id_string = player_name + "_" + action;
+                    view_id_string = animatable_name + "_" + action;
                     view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
                     if (view_id != 0) {
                         findViewById(view_id).setOnClickListener(this);
@@ -74,7 +81,6 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 }
             }
         }
-        Log.e("ZeroTime", "Setting to: " + nasty_singleton.getZeroTime());
         new Thread(new Nhpk("player_right", new String[] { "p", "k", "h", "d" })).start();
     }
 
