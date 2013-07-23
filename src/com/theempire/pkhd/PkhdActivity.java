@@ -23,14 +23,22 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<String, View> animatable_holder;
     public HashMap<String, Boolean> animatable_state;
     public HashMap<String, List<String>> animatable_buffer;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        Context context = getApplicationContext();
+        
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pkhd);
-
+    
+        Pkhd nasty_singleton = Pkhd.getInstance();
+        if(nasty_singleton.counter.incrementAndGet() > 1){
+            /* Skip initialization. */
+            return;
+        }
+        
+        Context context = getApplicationContext();
         animatable_holder = new HashMap<String, View>();
         animatable_state = new HashMap<String, Boolean>();
         animatable_buffer = new HashMap<String, List<String>>();
@@ -67,7 +75,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 }
             }
         }
-        
+        Log.e("ZeroTime", "Setting to: " + nasty_singleton.getZeroTime());
         new Thread(new Nhpk("player_right", new String[] { "p", "k", "h", "d" })).start();
     }
 
