@@ -119,6 +119,12 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 }
                 /* run on ui thread */
                 runOnUiThread(new PkhdBlitter(this.target, this.action));
+                /* Expiremental Handler approach.  Don't really like it though. Only fun to do if you are changing a single image property.
+                Message msg = blitter_handler.obtainMessage();
+                msg.obj = new String[]{this.target, this.action};
+                blitter_handler.sendMessage(msg);
+                */
+                
             }
 
             /* Reduce health bar at this point if necessary. */
@@ -166,7 +172,18 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             animatable_holder.get(this.target).setTag(Integer.toString(num));
         }
     }
+    
+    final Handler blitter_handler = new Handler() {
+        public void handleMessage(Message msg){
+            String target = ((String[])msg.obj)[0];
+            String action = ((String[])msg.obj)[1];
+            int num = (Integer.parseInt((String) animatable_holder.get(target).getTag()) + 1) % image_map.get(target + "_" + action).size();
+            ((ImageView) animatable_holder.get(target)).setImageResource(image_map.get(target + "_" + action).get(num));
+            animatable_holder.get(target).setTag(Integer.toString(num));
+        }
+    };
 
+    /* Implicitly runs on UI Thread. */
     static final Handler health_handler = new Handler() {
         public void handleMessage(Message msg) {
             ((ImageView) msg.obj).setVisibility(View.INVISIBLE);
