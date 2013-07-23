@@ -3,6 +3,7 @@ package com.theempire.pkhd;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import android.app.Activity;
 import android.content.Context;
@@ -66,6 +67,8 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 }
             }
         }
+        
+        new Thread(new Nhpk("player_right", new String[] { "p", "k", "h", "d" })).start();
     }
 
     @Override
@@ -170,6 +173,41 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
 
             ((ImageView) animatable_holder.get(this.target)).setImageResource(image_map.get(action_type).get(num));
             animatable_holder.get(this.target).setTag(Integer.toString(num));
+        }
+    }
+    
+    class Nhpk implements Runnable {
+        private String target;
+        private String[] actions;
+        
+        public Nhpk(String target, String[] actions){
+            this.target = target;
+            this.actions = actions;
+        }
+        
+        @Override
+        public void run(){
+            /* Fires off events for "player_right" */
+            /* sleeps variable amount of time between 800 and 1500 */
+            Random rand_sleep = new Random();
+            Random rand_action = new Random();
+            int max = 1500;
+            int min = 1000;
+            
+            while(true){
+                int index = rand_action.nextInt(actions.length);
+                String action = actions[index];
+                
+                eventRouter(this.target, action, true);
+                
+                int sleep = rand_sleep.nextInt(max - min + 1) + min;
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
     }
     
