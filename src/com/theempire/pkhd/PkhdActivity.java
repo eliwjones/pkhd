@@ -23,8 +23,31 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<String, View> animatable_holder;
     public HashMap<String, Boolean> animatable_state;
     public HashMap<String, List<String>> animatable_buffer;
-    
+
     public long zero_time;
+    public Nhpk my_friend;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e("PKHD onPause", "On pause executed.");
+        my_friend.stopNhpkThread();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e("PKHD onStop", "On stop executed.");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("PKHD onResume", "Resuming!");
+        if (my_friend != null) {
+            my_friend.startNhpkThread();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +59,11 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         /* No point in singleton, maybe later. */
         //Pkhd nasty_singleton = Pkhd.getInstance();
         if (name_id_map != null) {
-            /* Skip initialization. */
+            /* Skip initialization. Technically, might want initialization in onResume() since that is always called. */
             /* Don't need silly nasty_singleton.counter.incrementAndGet() */
             return;
         }
-        
+
         zero_time = System.currentTimeMillis();
         Log.e("ZeroTime", "Setting to: " + zero_time);
 
@@ -81,7 +104,9 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 }
             }
         }
-        new Thread(new Nhpk("player_right", new String[] { "p", "k", "h", "d" })).start();
+
+        my_friend = new Nhpk("player_right", new String[] { "p", "k", "h", "d" });
+        my_friend.startNhpkThread();
     }
 
     @Override
@@ -193,6 +218,23 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         private String target;
         private String[] actions;
 
+        private Thread nhpkThread;
+
+        public void startNhpkThread() {
+            if (nhpkThread == null) {
+                nhpkThread = new Thread(this);
+                nhpkThread.start();
+            } else {
+                Log.e("Nhpk", "No need to run more than one thread.");
+            }
+        }
+
+        public void stopNhpkThread() {
+            Log.e("Nhpk", "Interrupting thread.");
+            nhpkThread.interrupt();
+            nhpkThread = null;
+        }
+
         public Nhpk(String target, String[] actions) {
             this.target = target;
             this.actions = actions;
@@ -207,7 +249,8 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             int max = 2000;
             int min = 1000;
 
-            while (true) {
+            Thread currentThread = Thread.currentThread();
+            while (currentThread == nhpkThread) {
                 int index = rand_action.nextInt(actions.length);
                 String action = actions[index];
 
@@ -221,6 +264,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                     e.printStackTrace();
                 }
             }
+            Log.e("Nhpk", "Runnable winding down.");
         }
     }
 
