@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.collections.Buffer;
+import org.apache.commons.collections.BufferUtils;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -17,15 +21,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
-
-
 public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<Integer, String> name_id_map;
     public HashMap<String, List<Integer>> image_map;
     public HashMap<String, View> animatable_holder;
     public HashMap<String, Boolean> animatable_state;
     public HashMap<String, List<String>> animatable_buffer;
+    public HashMap<String, Buffer> past_actions;
 
     public long zero_time;
     public Nhpk my_friend;
@@ -49,7 +51,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         Log.e("PKHD onResume", "Resuming!");
         /* No point in singleton, maybe later. */
         //Pkhd nasty_singleton = Pkhd.getInstance();
-        
+
         if (name_id_map != null) {
             /* Skip initialization. Technically, might want initialization in onResume() since that is always called. */
             /* Don't need silly nasty_singleton.counter.incrementAndGet() */
@@ -64,6 +66,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         animatable_holder = new HashMap<String, View>();
         animatable_state = new HashMap<String, Boolean>();
         animatable_buffer = new HashMap<String, List<String>>();
+        past_actions = new HashMap<String, Buffer>();
         image_map = new HashMap<String, List<Integer>>();
         name_id_map = new HashMap<Integer, String>();
 
@@ -82,6 +85,10 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
             if (parts[0].equals("health")) {
             }
             if (parts[0].equals("player")) {
+                past_actions.put(animatable_name, BufferUtils.synchronizedBuffer(new CircularFifoBuffer(5)));
+                for (int i = 0; i < 5; i++) {
+                    past_actions.get(animatable_name).add("0");
+                }
                 for (String action : new String[] { "p", "k", "h", "d" }) {
                     view_id_string = animatable_name + "_" + action;
                     view_id = context.getResources().getIdentifier(view_id_string, "id", context.getPackageName());
@@ -113,7 +120,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         String view_name = name_id_map.get(v.getId());
-        Log.e("onClick", "view_name: " + view_name);
+        //Log.e("onClick", "view_name: " + view_name);
         String[] parts = view_name.split("_");
         String action = parts[2];
         String target = parts[0] + "_" + parts[1];
@@ -128,7 +135,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 //Log.e("Animateable Buffer", "Adding to buffer for target: " + target + " action: " + action);
                 animatable_buffer.get(target).add(action);
             } else {
-                Log.e("Animateable Buffer", "Buffer Full!!!!");
+                //Log.e("Animateable Buffer", "Buffer Full!!!!");
             }
             return;
         }
@@ -184,9 +191,11 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
                 animatable_holder.get(health_bar).setTag("" + health);
             }
 
+            past_actions.get(target).add(action);
+            Log.e("PastActions", target + " : " + past_actions.get(target).toString());
             /* Once done with looping, check animatable_buffer.get(target) for actions. */
             if (!animatable_buffer.get(target).isEmpty()) {
-                Log.e("Animateable Buffer", "Found stuff in buffer!  Should be animating it!! List: " + TextUtils.join(", ", animatable_buffer.get(target)));
+                //Log.e("Animateable Buffer", "Found stuff in buffer!  Should be animating it!! List: " + TextUtils.join(", ", animatable_buffer.get(target)));
                 new Thread(new PkhdAnimator(target, animatable_buffer.get(target).remove(0))).start();
             } else {
                 animatable_state.put(target, false);
