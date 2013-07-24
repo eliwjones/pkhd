@@ -44,23 +44,12 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     protected void onResume() {
         super.onResume();
         Log.e("PKHD onResume", "Resuming!");
-        if (my_friend != null) {
-            my_friend.startNhpkThread();
-        }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_pkhd);
-
         /* No point in singleton, maybe later. */
         //Pkhd nasty_singleton = Pkhd.getInstance();
         if (name_id_map != null) {
             /* Skip initialization. Technically, might want initialization in onResume() since that is always called. */
             /* Don't need silly nasty_singleton.counter.incrementAndGet() */
+            my_friend.startNhpkThread();
             return;
         }
 
@@ -107,6 +96,14 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
 
         my_friend = new Nhpk("player_right", new String[] { "p", "k", "h", "d" });
         my_friend.startNhpkThread();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pkhd);
     }
 
     @Override
