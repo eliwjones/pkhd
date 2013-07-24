@@ -17,6 +17,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+
+
 public class PkhdActivity extends Activity implements View.OnClickListener {
     public HashMap<Integer, String> name_id_map;
     public HashMap<String, List<Integer>> image_map;
@@ -46,6 +49,7 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         Log.e("PKHD onResume", "Resuming!");
         /* No point in singleton, maybe later. */
         //Pkhd nasty_singleton = Pkhd.getInstance();
+        
         if (name_id_map != null) {
             /* Skip initialization. Technically, might want initialization in onResume() since that is always called. */
             /* Don't need silly nasty_singleton.counter.incrementAndGet() */
