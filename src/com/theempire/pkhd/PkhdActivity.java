@@ -31,12 +31,17 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
 
     public long zero_time;
     public Nhpk my_friend;
+    public HashMap<String, Integer> health_deduction;
+    Random my_rand = new Random();
+    int[] rand_health_vals = new int[]{-1,1};
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.e("PKHD onPause", "On pause executed.");
-        my_friend.stopNhpkThread();
+        if(my_friend != null){
+            my_friend.stopNhpkThread();
+        }
     }
 
     @Override
@@ -55,7 +60,9 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         if (name_id_map != null) {
             /* Skip initialization. Technically, might want initialization in onResume() since that is always called. */
             /* Don't need silly nasty_singleton.counter.incrementAndGet() */
-            my_friend.startNhpkThread();
+            if(my_friend != null){
+                my_friend.startNhpkThread();
+            }
             return;
         }
 
@@ -69,6 +76,14 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
         past_actions = new HashMap<String, Buffer>();
         image_map = new HashMap<String, List<Integer>>();
         name_id_map = new HashMap<Integer, String>();
+        
+        health_deduction = new HashMap<String, Integer>();
+        health_deduction.put("pp", null); health_deduction.put("kk", null); health_deduction.put("hh", null); health_deduction.put("dd", null);
+        /* If value is null, deduction will be rand(1,-1) */
+        health_deduction.put("ph", 1); health_deduction.put("kd", 1); health_deduction.put("hp", -2); health_deduction.put("dk", -2);
+        health_deduction.put("pk", 1); health_deduction.put("kh", 1); health_deduction.put("hd", 1); health_deduction.put("dp", -2);
+        health_deduction.put("kp", -1); health_deduction.put("hk", -2); health_deduction.put("dh", 1); health_deduction.put("pd", -1);
+        Log.e("health_deduction", " " + health_deduction);
 
         int image_id = 0;
         int view_id = 0;
@@ -178,21 +193,46 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
 
             /* Reduce health bar at this point if necessary. */
             String[] right_left = this.target.split("_");
-            String health_bar = right_left[1].equals("left") ? "right" : "left";
-            health_bar = "health_" + health_bar;
+            String opposite_position = right_left[1].equals("left") ? "right" : "left";
+            String health_bar = "health_" + opposite_position;
             LinearLayout health_bar_layout = (LinearLayout) animatable_holder.get(health_bar);
             int health = Integer.parseInt((String) health_bar_layout.getTag());
-            if (health > 0) {
-                Message msg = health_handler.obtainMessage();
-                /* Should add child ImageViews starting at 0 so don't need wonky 10 - health. */
-                msg.obj = health_bar_layout.getChildAt(10 - health);
-                health_handler.sendMessage(msg);
-                health = health - 1;
-                animatable_holder.get(health_bar).setTag("" + health);
+            String hd_key = past_actions.get(target).toArray()[4].toString() + past_actions.get("player_" + opposite_position).toArray()[4].toString();
+            //Log.e("Past action Key", hd_key);
+            int deduction = 0;
+            if(health_deduction.containsKey(hd_key)){
+                int rand_idx = my_rand.nextInt(rand_health_vals.length);
+                deduction = health_deduction.get(hd_key) == null ? rand_health_vals[rand_idx] : health_deduction.get(hd_key);
             }
-
+            if (deduction != 0 && health + deduction >= 0 && health + deduction < 10) {
+                //Log.e("Draw Health","Deduction: " + deduction + " hd_key:" + hd_key + " health: " + health);
+                
+                /* Need to use wonky 10 - health.. */
+                /* 0 is the TOP ~ HEALTH = 10 */
+                /* 10 is the BOTTOM ~ HEALTH = 0 */
+                int plus_minus = deduction >= 0 ? 1 : -1;
+                int abs_deduction = plus_minus*deduction;
+                int health_block_index = 9 - health;
+                for(int i = 0; i < abs_deduction; i++){
+                    int shift = plus_minus == 1 ? 1 : 0;
+                    Message msg = health_handler.obtainMessage();
+                    msg.obj = health_bar_layout.getChildAt(health_block_index - shift);
+                    msg.arg1 = plus_minus;
+                    //Log.e("health blit", "health_block_index: " + (health_block_index - shift));
+                    if(msg.obj != null){
+                        health_handler.sendMessage(msg);
+                    } else {
+                        Log.e("health blit", "msg.obj is null. Could not getChildAt(" + (health_block_index - shift) + ")");
+                    }
+                    health_block_index += plus_minus*-1;
+                }
+                int new_health = 9 - health_block_index;
+                if(new_health < 10 && new_health >= 0){
+                     animatable_holder.get(health_bar).setTag("" + new_health);
+                }
+            }
             past_actions.get(target).add(action);
-            Log.e("PastActions", target + " : " + past_actions.get(target).toString());
+
             /* Once done with looping, check animatable_buffer.get(target) for actions. */
             if (!animatable_buffer.get(target).isEmpty()) {
                 //Log.e("Animateable Buffer", "Found stuff in buffer!  Should be animating it!! List: " + TextUtils.join(", ", animatable_buffer.get(target)));
@@ -291,7 +331,9 @@ public class PkhdActivity extends Activity implements View.OnClickListener {
     /* Implicitly runs on UI Thread. */
     static final Handler health_handler = new Handler() {
         public void handleMessage(Message msg) {
-            ((ImageView) msg.obj).setVisibility(View.INVISIBLE);
+            int visibility = msg.arg1 == 1 ? View.VISIBLE : View.INVISIBLE;
+            //Log.e("health_handler","visibility: " + visibility);
+            ((ImageView) msg.obj).setVisibility(visibility);
         }
     };
 }

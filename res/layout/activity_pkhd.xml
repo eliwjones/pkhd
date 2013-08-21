@@ -34,7 +34,7 @@
         android:layout_toLeftOf="@id/player_v_player"
         android:orientation="vertical"
         android:paddingTop="10dp"
-        android:tag="10"
+        android:tag="9"
         android:weightSum="1.0" >
 
         <ImageView
@@ -117,7 +117,7 @@
         android:layout_toRightOf="@id/player_v_player"
         android:orientation="vertical"
         android:paddingTop="10dp"
-        android:tag="10"
+        android:tag="9"
         android:weightSum="1.0" >
 
         <ImageView
